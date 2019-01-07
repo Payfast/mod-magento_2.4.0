@@ -5,10 +5,14 @@
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
 
+use Magento\Framework\App\Request\InvalidRequestException;
+use Magento\Framework\App\RequestInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Payfast\Payfast\Model\Config AS PayFastConfig;
+use Magento\Framework\App\CsrfAwareActionInterface;
 
-class Index extends \Payfast\Payfast\Controller\AbstractPayfast
+
+class Index extends \Payfast\Payfast\Controller\AbstractPayfast implements CsrfAwareActionInterface
 {
     private $storeId;
 
@@ -225,5 +229,32 @@ class Index extends \Payfast\Payfast\Controller\AbstractPayfast
         }
 
         pflog(__METHOD__.' : eof');
+    }
+
+    /**
+     * Create exception in case CSRF validation failed.
+     * Return null if default exception will suffice.
+     *
+     * @param RequestInterface $request
+     *
+     * @return InvalidRequestException|null
+     */
+    public function createCsrfValidationException( RequestInterface $request ): ?InvalidRequestException
+    {
+        return null;
+    }
+
+    /**
+     * Perform custom request validation.
+     * Return null if default validation is needed.
+     *
+     * @param RequestInterface $request
+     *
+     * @return bool|null
+     */
+    public function validateForCsrf( RequestInterface $request ): ?bool
+    {
+        return true;
+
     }
 }
