@@ -66,7 +66,7 @@ class AuthorizationRequest implements BuilderInterface
 
             $order = $payment->getOrder();
 
-            $address = $order->getShippingAddress();
+            $address = $order->getBillingAddress();
 
 
 
