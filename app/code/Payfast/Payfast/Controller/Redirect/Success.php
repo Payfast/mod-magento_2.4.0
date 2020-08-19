@@ -6,6 +6,7 @@
  */
 namespace Payfast\Payfast\Controller\Redirect;
 
+use Magento\Framework\View\Result\PageFactory;
 
 /**
  * Responsible for loading page content.
@@ -15,7 +16,7 @@ namespace Payfast\Payfast\Controller\Redirect;
  */
 class Success extends \Payfast\Payfast\Controller\AbstractPayfast
 {
-    /** @var \Magento\Framework\View\Result\PageFactory */
+    /** @var PageFactory */
     protected $resultPageFactory;
 
     /**
@@ -28,18 +29,14 @@ class Success extends \Payfast\Payfast\Controller\AbstractPayfast
         $pre = __METHOD__ . " : ";
         $this->_logger->debug($pre . 'bof');
 
-        try
-        {
-
+        try {
             $this->_redirect('checkout/onepage/success');
-
-        } catch ( \Exception $e ) {
-            $this->_logger->error( $pre . $e->getMessage());
-            $this->messageManager->addExceptionMessage( $e, __( 'We can\'t start PayFast Checkout.' ) );
-            $this->_redirect( 'checkout/cart' );
+        } catch (\Exception $e) {
+            $this->_logger->error($pre . $e->getMessage());
+            $this->messageManager->addExceptionMessage($e, __('We can\'t start PayFast Checkout.'));
+            $this->_redirect('checkout/cart');
         }
 
         return '';
     }
-
 }

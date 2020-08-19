@@ -6,14 +6,27 @@
  */
 namespace Payfast\Payfast\Controller;
 
-include_once( dirname( __FILE__ ) .'/../Model/payfast_common.inc' );
+include_once dirname(__FILE__) . '/../Model/payfast_common.inc';
 
-use Magento\Framework\App\ActionInterface;
-use Payfast\Payfast\Model\Payfast;
-use Magento\Framework\App\Action\Action as AppAction;
-use Magento\Sales\Model\Order\Email\Sender\OrderSender;
-use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Checkout\Controller\Express\RedirectLoginInterface;
+use Magento\Framework\App\Action\Action as AppAction;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ActionInterface;
+use Magento\Framework\DB\TransactionFactory;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Session\Generic;
+use Magento\Framework\Url\Helper\Data;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Quote\Model\Quote;
+use \Magento\Customer\Model\Session;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\OrderFactory;
+use Magento\Sales\Model\ResourceModel\Order;
+use Magento\Sales\Model\ResourceModel\Order\Payment\Transaction;
+use Payfast\Payfast\Model\Config;
+use Payfast\Payfast\Model\Payfast;
+use Psr\Log\LoggerInterface;
 
 /**
  * Abstract Express Checkout Controller
@@ -29,12 +42,12 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $_checkoutTypes = [ ];
 
     /**
-     * @var \Payfast\Payfast\Model\Config
+     * @var Config
      */
     protected $_config;
 
     /**
-     * @var \Magento\Quote\Model\Quote
+     * @var Quote
      */
     protected $_quote = false;
 
@@ -46,7 +59,7 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $_configType = 'Payfast\Payfast\Model\Config';
 
     /** Config method type @var string */
-    protected $_configMethod = \Payfast\Payfast\Model\Config::METHOD_CODE;
+    protected $_configMethod = Config::METHOD_CODE;
 
     /**
      * Checkout mode type
@@ -56,7 +69,7 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $_checkoutType;
 
     /**
-     * @var \Magento\Customer\Model\Session
+     * @var Session
      */
     protected $customerSession;
 
@@ -64,45 +77,45 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $checkoutSession;
 
     /**
-     * @var \Magento\Sales\Model\OrderFactory
+     * @var OrderFactory
      */
     protected $orderFactory;
 
     /**
-     * @var \Magento\Framework\Session\Generic
+     * @var Generic
      */
     protected $_payfastSession;
 
     /**
-     * @var \Magento\Framework\Url\Helper
+     * @var Data
      */
     protected $urlHelper;
 
     /**
-     * @var \Magento\Sales\Model\ResourceModel\Order $orderResourceModel
+     * @var Order $orderResourceModel
      */
     protected $orderResourceModel;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     protected $_logger;
 
     /** @var  \Magento\Sales\Model\Order $_order */
     protected $_order;
 
-    /** @var \Magento\Framework\View\Result\PageFactory  */
+    /** @var PageFactory  */
     protected $_pageFactory;
 
-    /** @var \Magento\Sales\Model\ResourceModel\Order\Payment\Transaction  $salesTransactionResourceModel*/
+    /** @var Transaction  $salesTransactionResourceModel*/
     protected $salesTransactionResourceModel;
 
     /**
-     * @var \Magento\Framework\DB\TransactionFactory
+     * @var TransactionFactory
      */
     protected $transactionFactory;
 
-    /** @var \Payfast\Payfast\Model\Payfast $paymentMethod*/
+    /** @var Payfast $paymentMethod*/
     protected $paymentMethod;
 
     protected $pageFactory;
@@ -110,44 +123,44 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $orderSender;
 
     protected $invoiceSender;
+
     /**
-     * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Framework\View\Result\PageFactory $pageFactory
-     * @param \Magento\Customer\Model\Session $customerSession
+     * @param Context $context
+     * @param PageFactory $pageFactory
+     * @param Session $customerSession
      * @param \Magento\Checkout\Model\Session $checkoutSession
-     * @param \Magento\Sales\Model\OrderFactory $orderFactory
-     * @param \Magento\Framework\Session\Generic $payfastSession
-     * @param \Magento\Framework\Url\Helper\Data $urlHelper
-     * @param \Magento\Sales\Model\ResourceModel\Order $orderResourceModel
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\DB\TransactionFactory $transactionFactory
-     * @param \Payfast\Payfast\Model\Payfast $paymentMethod
+     * @param OrderFactory $orderFactory
+     * @param Generic $payfastSession
+     * @param Data $urlHelper
+     * @param Order $orderResourceModel
+     * @param LoggerInterface $logger
+     * @param TransactionFactory $transactionFactory
+     * @param Payfast $paymentMethod
      * @param OrderSender $orderSender
      * @param InvoiceSender $invoiceSender
+     * @param Transaction $salesTransactionResourceModel
      */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\View\Result\PageFactory $pageFactory,
-        \Magento\Customer\Model\Session $customerSession,
+        Context $context,
+        PageFactory $pageFactory,
+        Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\Session\Generic $payfastSession,
-        \Magento\Framework\Url\Helper\Data $urlHelper,
-        \Magento\Sales\Model\ResourceModel\Order $orderResourceModel,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\DB\TransactionFactory $transactionFactory,
-        \Payfast\Payfast\Model\Payfast $paymentMethod,
+        OrderFactory $orderFactory,
+        Generic $payfastSession,
+        Data $urlHelper,
+        Order $orderResourceModel,
+        LoggerInterface $logger,
+        TransactionFactory $transactionFactory,
+        Payfast $paymentMethod,
         OrderSender $orderSender,
         InvoiceSender $invoiceSender,
-        \Magento\Sales\Model\ResourceModel\Order\Payment\Transaction $salesTransactionResourceModel
-
-    )
-    {
+        Transaction $salesTransactionResourceModel
+    ) {
         $pre = __METHOD__ . " : ";
 
         $this->_logger = $logger;
 
-        $this->_logger->debug( $pre . 'bof' );
+        $this->_logger->debug($pre . 'bof');
 
         $this->customerSession = $customerSession;
         $this->checkoutSession = $checkoutSession;
@@ -162,17 +175,16 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
         $this->invoiceSender = $invoiceSender;
         $this->salesTransactionResourceModel = $salesTransactionResourceModel;
 
-        parent::__construct( $context );
+        parent::__construct($context);
 
         $parameters = [ 'params' => [ $this->_configMethod ] ];
-        $this->_config = $this->_objectManager->create( $this->_configType, $parameters );
+        $this->_config = $this->_objectManager->create($this->_configType, $parameters);
 
-        if (! defined('PF_DEBUG'))
-        {
+        if (! defined('PF_DEBUG')) {
             define('PF_DEBUG', $this->getConfigData('debug'));
         }
 
-        $this->_logger->debug( $pre . 'eof' );
+        $this->_logger->debug($pre . 'eof');
     }
 
     /**
@@ -183,7 +195,7 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      * @return mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function getConfigData( $field)
+    public function getConfigData($field)
     {
         return $this->_config->getValue($field);
     }
@@ -192,11 +204,10 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      * Instantiate
      *
      * @return void
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function _initCheckout()
     {
-
         $pre = __METHOD__ . " : ";
         $this->_logger->debug($pre . 'bof');
 
@@ -204,17 +215,15 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
 
         $this->_order = $this->checkoutSession->getLastRealOrder();
 
-        if ( !$this->_order->getId())
-        {
-            $phrase = __( 'We could not find "Order" for processing' );
+        if (!$this->_order->getId()) {
+            $phrase = __('We could not find "Order" for processing');
             $this->_logger->critical($pre . $phrase);
 
-            $this->getResponse()->setStatusHeader( 404, '1.1', 'Not found' );
-            throw new \Magento\Framework\Exception\LocalizedException( $phrase );
+            $this->getResponse()->setStatusHeader(404, '1.1', 'Not found');
+            throw new LocalizedException($phrase);
         }
 
-        if( $this->_order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT)
-        {
+        if ($this->_order->getState() != \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT) {
             $this->_logger->debug($pre . 'updating order state and status');
 
             $this->_order->setStatus(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
@@ -223,22 +232,20 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
             $this->orderResourceModel->save($this->_order);
         }
 
-        if ( $this->_order->getQuoteId() )
-        {
-            $this->checkoutSession->setPayfastQuoteId( $this->checkoutSession->getQuoteId() );
-            $this->checkoutSession->setPayfastSuccessQuoteId( $this->checkoutSession->getLastSuccessQuoteId() );
-            $this->checkoutSession->setPayfastRealOrderId( $this->checkoutSession->getLastRealOrderId() );
-            $this->checkoutSession->getQuote()->setIsActive( false )->save();
+        if ($this->_order->getQuoteId()) {
+            $this->checkoutSession->setPayfastQuoteId($this->checkoutSession->getQuoteId());
+            $this->checkoutSession->setPayfastSuccessQuoteId($this->checkoutSession->getLastSuccessQuoteId());
+            $this->checkoutSession->setPayfastRealOrderId($this->checkoutSession->getLastRealOrderId());
+            $this->checkoutSession->getQuote()->setIsActive(false)->save();
         }
 
         $this->_logger->debug($pre . 'eof');
-
     }
 
     /**
      * PayFast session instance getter
      *
-     * @return \Magento\Framework\Session\Generic
+     * @return Generic
      */
     protected function _getSession()
     {
@@ -258,12 +265,11 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     /**
      * Return checkout quote object
      *
-     * @return \Magento\Quote\Model\Quote
+     * @return Quote
      */
     protected function _getQuote()
     {
-        if ( !$this->_quote )
-        {
+        if (!$this->_quote) {
             $this->_quote = $this->_getCheckoutSession()->getQuote();
         }
 
@@ -313,12 +319,10 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      */
     public function redirectLogin()
     {
-        $this->_actionFlag->set( '', 'no-dispatch', true );
-        $this->customerSession->setBeforeAuthUrl( $this->_redirect->getRefererUrl() );
+        $this->_actionFlag->set('', 'no-dispatch', true);
+        $this->customerSession->setBeforeAuthUrl($this->_redirect->getRefererUrl());
         $this->getResponse()->setRedirect(
-            $this->urlHelper->addRequestParam( $this->orderResourceModel->getLoginUrl(), [ 'context' => 'checkout' ] )
+            $this->urlHelper->addRequestParam($this->orderResourceModel->getLoginUrl(), [ 'context' => 'checkout' ])
         );
     }
-
-
 }

@@ -11,7 +11,6 @@ use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\View\Element\Template\Context;
 use Payfast\Payfast\Model\Config;
 
-
 class Form extends \Magento\Payment\Block\Form
 {
     /** @var string Payment method code */
@@ -52,15 +51,15 @@ class Form extends \Magento\Payment\Block\Form
         array $data = []
     ) {
         $pre = __METHOD__ . " : ";
-        parent::__construct($context, $data);
-        $this->_logger->debug( $pre . 'bof' );
         $this->_payfastData = $payfastData;
         $this->payfastConfigFactory = $payfastConfigFactory;
+        parent::__construct($context, $data);
+        $this->_logger->debug($pre . 'bof');
         $this->_localeResolver = $localeResolver;
 
         $this->_isScopePrivate = true;
         $this->currentCustomer = $currentCustomer;
-        $this->_logger->debug( $pre . "eof" );
+        $this->_logger->debug($pre . "eof");
     }
 
     /**
@@ -71,9 +70,8 @@ class Form extends \Magento\Payment\Block\Form
     protected function _construct()
     {
         $pre = __METHOD__ . " : ";
-        $this->_logger->debug( $pre . 'bof' );
-        $this->_config = $this->payfastConfigFactory->create()->setMethod( $this->getMethodCode() );
-
+        $this->_logger->debug($pre . 'bof');
+        $this->_config = $this->payfastConfigFactory->create()->setMethod($this->getMethodCode());
     }
 
     /**
@@ -84,12 +82,8 @@ class Form extends \Magento\Payment\Block\Form
     public function getMethodCode()
     {
         $pre = __METHOD__ . " : ";
-        $this->_logger->debug( $pre . 'bof' );
+        $this->_logger->debug($pre . 'bof');
 
         return $this->_methodCode;
     }
-
-
-
-
 }
