@@ -1,4 +1,5 @@
 <?php namespace Payfast\Payfast\Gateway\Request;
+
 /**
  * Copyright (c) 2008 PayFast (Pty) Ltd
  * You (being anyone who is not PayFast (Pty) Ltd) may download and use this plugin / code in your own website in conjunction with a registered and active PayFast account. If your PayFast account is terminated for any reason, you may not use this plugin / code or part thereof.
@@ -10,7 +11,6 @@ use Payfast\Payfast\Gateway\Http\Client\ClientMock;
 
 class MockDataRequest implements BuilderInterface
 {
-
     const FORCE_RESULT = 'FORCE_RESULT';
 
     /**
@@ -38,7 +38,4 @@ class MockDataRequest implements BuilderInterface
                 : $transactionResult
         ];
     }
-
-
-
 }

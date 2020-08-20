@@ -7,7 +7,6 @@
 
 use Magento\Payment\Gateway\Config\ValueHandlerInterface;
 use Magento\Payment\Gateway\Helper\SubjectReader;
-use Magento\Sales\Model\Order\Payment;
 
 class CanCaptureHandler implements ValueHandlerInterface
 {
@@ -41,6 +40,6 @@ class CanCaptureHandler implements ValueHandlerInterface
         $paymentDO = $this->subjectReader->readPayment($subject);
 
         $payment = $paymentDO->getPayment();
-        return $payment instanceof Payment && !(bool)$payment->getAmountPaid();
+        return $payment instanceof \Magento\Sales\Model\Order\Payment && !(bool)$payment->getAmountPaid();
     }
 }

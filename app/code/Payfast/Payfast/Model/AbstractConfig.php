@@ -32,7 +32,6 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
 
     /**#@-*/
 
-
     /**
      * Current payment method code
      *
@@ -52,7 +51,6 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      */
     protected $pathPattern;
 
-
     /**
      * Core store config
      *
@@ -65,8 +63,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      */
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-    )
-    {
+    ) {
         parent::__construct($scopeConfig, self::getMethodCode());
         $this->_scopeConfig = $scopeConfig;
     }
@@ -79,7 +76,8 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
     /**
      * @return null|string
      */
-    public function isActive(){
+    public function isActive()
+    {
         return $this->getValue('active');
     }
     /**
@@ -89,7 +87,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return $this
      */
-    public function setMethodInstance( $method )
+    public function setMethodInstance($method)
     {
         $this->methodInstance = $method;
 
@@ -103,14 +101,11 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return $this
      */
-    public function setMethod( $method )
+    public function setMethod($method)
     {
-        if ( $method instanceof MethodInterface )
-        {
+        if ($method instanceof MethodInterface) {
             $this->_methodCode = $method->getCode();
-        }
-        elseif ( is_string( $method ) )
-        {
+        } elseif (is_string($method)) {
             $this->_methodCode = $method;
         }
 
@@ -134,7 +129,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return $this
      */
-    public function setStoreId( $storeId )
+    public function setStoreId($storeId)
     {
         $this->_storeId = (int)$storeId;
 
@@ -151,20 +146,18 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function getValue( $key, $storeId = null )
+    public function getValue($key, $storeId = null)
     {
+        $underscored = strtolower(preg_replace('/(.)([A-Z])/', "$1_$2", $key));
+        $path = $this->_getSpecificConfigPath($underscored);
 
-        $underscored = strtolower( preg_replace( '/(.)([A-Z])/', "$1_$2", $key ) );
-        $path = $this->_getSpecificConfigPath( $underscored );
-
-        if ( $path !== null )
-        {
+        if ($path !== null) {
             $value = $this->_scopeConfig->getValue(
                 $path,
                 ScopeInterface::SCOPE_STORE,
                 $this->_storeId
             );
-            $value = $this->_prepareValue( $underscored, $value );
+            $value = $this->_prepareValue($underscored, $value);
 
             return $value;
         }
@@ -179,7 +172,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return void
      */
-    public function setMethodCode( $methodCode )
+    public function setMethodCode($methodCode)
     {
         $this->_methodCode = $methodCode;
     }
@@ -191,7 +184,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return void
      */
-    public function setPathPattern( $pathPattern )
+    public function setPathPattern($pathPattern)
     {
         $this->pathPattern = $pathPattern;
     }
@@ -203,11 +196,10 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return string|null
      */
-    protected function _getSpecificConfigPath( $fieldName )
+    protected function _getSpecificConfigPath($fieldName)
     {
-        if ( $this->pathPattern )
-        {
-            return sprintf( $this->pathPattern, $this->_methodCode, $fieldName );
+        if ($this->pathPattern) {
+            return sprintf($this->pathPattern, $this->_methodCode, $fieldName);
         }
 
         return "payment/{$this->_methodCode}/{$fieldName}";
@@ -221,7 +213,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return string Modified value or old value
      */
-    protected function _prepareValue( $key, $value )
+    protected function _prepareValue($key, $value)
     {
         return $value;
     }
@@ -233,11 +225,11 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @return bool
      */
-    public function isMethodAvailable( $methodCode = null )
+    public function isMethodAvailable($methodCode = null)
     {
         $methodCode = $methodCode ?: $this->_methodCode;
 
-        return $this->isMethodActive( $methodCode );
+        return $this->isMethodActive($methodCode);
     }
 
     /**
@@ -249,15 +241,15 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    public function isMethodActive( $method )
+    public function isMethodActive($method)
     {
-        switch ( $method )
-        {
+        switch ($method) {
             case Config::METHOD_CODE:
                 $isEnabled = $this->_scopeConfig->isSetFlag(
-                        'payment/' . $this->getMethodCode() . '/active',
-                        ScopeInterface::SCOPE_STORE, $this->_storeId
-                    ) ||
+                    'payment/' . $this->getMethodCode() . '/active',
+                    ScopeInterface::SCOPE_STORE,
+                    $this->_storeId
+                ) ||
                     $this->_scopeConfig->isSetFlag(
                         'payment/' . $this->getMethodCode() . '/active',
                         ScopeInterface::SCOPE_STORE,
@@ -273,7 +265,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
                 );
         }
 
-        return $this->isMethodSupportedForCountry( $method ) && $isEnabled;
+        return $this->isMethodSupportedForCountry($method) && $isEnabled;
     }
 
     /**
@@ -286,9 +278,8 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function isMethodSupportedForCountry( $method = null, $countryCode = null )
+    public function isMethodSupportedForCountry($method = null, $countryCode = null)
     {
         return true;
     }
-
 }

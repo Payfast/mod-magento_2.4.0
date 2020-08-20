@@ -1,10 +1,10 @@
 <?php namespace Payfast\Payfast\Gateway\Validator;
+
 /**
  * Copyright (c) 2008 PayFast (Pty) Ltd
  * You (being anyone who is not PayFast (Pty) Ltd) may download and use this plugin / code in your own website in conjunction with a registered and active PayFast account. If your PayFast account is terminated for any reason, you may not use this plugin / code or part thereof.
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
-
 
 use Magento\Payment\Gateway\Validator\AbstractValidator;
 use Magento\Payment\Gateway\Validator\ResultInterface;
@@ -23,16 +23,12 @@ class ResponseCodeValidator extends AbstractValidator
      * @param LoggerInterface $logger
      * @param ResultInterfaceFactory $resultFactory
      */
-    public function __construct(
-        ResultInterfaceFactory $resultFactory,
-        LoggerInterface $logger
-    ) {
-
+    public function __construct(ResultInterfaceFactory $resultFactory, LoggerInterface $logger)
+    {
         parent::__construct($resultFactory);
 
         $this->logger = $logger;
     }
-
 
     /**
      * Performs domain-related validation for business object
@@ -41,18 +37,18 @@ class ResponseCodeValidator extends AbstractValidator
      *
      * @return ResultInterface
      */
-    public function validate( array $validationSubject )
+    public function validate(array $validationSubject)
     {
-        $pre = __METHOD__. ' : ';
-        $this->logger->debug($pre. 'bof');
+        $pre = __METHOD__ . ' : ';
+        $this->logger->debug($pre . 'bof');
 
         if (!isset($validationSubject['response']) || !is_array($validationSubject['response'])) {
             throw new \InvalidArgumentException('Response does not exist');
         }
 
         $response = $validationSubject['response'];
-        
-        $this->logger->debug($pre . 'response has : '. print_r($response, true));
+
+        $this->logger->debug($pre . 'response has : ' . print_r($response, true));
 
         if ($this->isSuccessfulTransaction($response)) {
             return $this->createResult(
@@ -65,7 +61,6 @@ class ResponseCodeValidator extends AbstractValidator
                 [__('Gateway is not called just yet, we will now call PayFast via redirect.')]
             );
         }
-
     }
 
     /**

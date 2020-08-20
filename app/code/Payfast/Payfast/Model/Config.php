@@ -5,9 +5,14 @@
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
 
-// @codingStandardsIgnoreFile
-
 namespace Payfast\Payfast\Model;
+
+use Magento\Directory\Helper\Data;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\UrlInterface;
+use Magento\Framework\View\Asset\Repository;
+use Magento\Store\Api\StoreManagementInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Config model that is aware of all \Payfast\Payfast payment methods
@@ -18,7 +23,7 @@ namespace Payfast\Payfast\Model;
 class Config extends AbstractConfig
 {
 
-    /** @var \Payfast\Payfast\Model\Payfast this is a model which we will use. */
+    /** @var Payfast this is a model which we will use. */
     const METHOD_CODE = 'payfast';
 
     /** @var string should this module send confirmation email */
@@ -27,45 +32,43 @@ class Config extends AbstractConfig
     /** @var string should this module send invoice email */
     const KEY_SEND_INVOICE_EMAIL = 'allowed_confirmation_email';
 
-    /** Core data @var \Magento\Directory\Helper\Data */
+    /** Core data  */
     protected $directoryHelper;
-
-    /** @var \Magento\Store\Model\StoreManagerInterface */
-    protected $_storeManager;
 
     protected $_supportedBuyerCountryCodes = ['ZA'];
 
     /** Currency codes supported by PayFast methods @var string[] */
     protected $_supportedCurrencyCodes = ['ZAR'];
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     protected $_logger;
 
     /**
-     * @var \Magento\Framework\UrlInterface
+     * @var UrlInterface
      */
     protected $_urlBuilder;
     /**
-     * @var \Magento\Framework\View\Asset\Repository
+     * @var Repository
      */
     protected $_assetRepo;
-    /**
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Directory\Helper\Data $directoryHelper
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
 
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\View\Asset\Repository
+    /**
+     * @param ScopeConfigInterface $scopeConfig
+     * @param Data $directoryHelper
+     * @param StoreManagerInterface $storeManager
+     * @param LoggerInterface $logger
+     * @param Repository $assetRepo
+     * @param UrlInterface $urlBuilder
      * @param array $params
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Directory\Helper\Data $directoryHelper,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Psr\Log\LoggerInterface $logger,
-        \Magento\Framework\View\Asset\Repository $assetRepo,
-        \Magento\Framework\UrlInterface $urlBuilder,
+        ScopeConfigInterface $scopeConfig,
+        Data $directoryHelper,
+        StoreManagementInterface $storeManager,
+        LoggerInterface $logger,
+        Repository $assetRepo,
+        UrlInterface $urlBuilder,
         $params = []
     ) {
         $this->_logger = $logger;
@@ -95,16 +98,16 @@ class Config extends AbstractConfig
     public function getCheckoutRedirectUrl()
     {
         $pre = __METHOD__ . " : ";
-        $this->_logger->debug( $pre . 'bof' );
+        $this->_logger->debug($pre . 'bof');
 
-        return $this->_urlBuilder->getUrl( 'payfast/redirect' );
+        return $this->_urlBuilder->getUrl('payfast/redirect');
     }
     /**
      * getPaidSuccessUrl
      */
     public function getPaidSuccessUrl()
     {
-        return $this->_urlBuilder->getUrl( 'payfast/redirect/success', array( '_secure' => true ) );
+        return $this->_urlBuilder->getUrl('payfast/redirect/success', [ '_secure' => true ]);
     }
 
     /**
@@ -112,14 +115,14 @@ class Config extends AbstractConfig
      */
     public function getPaidCancelUrl()
     {
-        return $this->_urlBuilder->getUrl( 'payfast/redirect/cancel', array( '_secure' => true ) );
+        return $this->_urlBuilder->getUrl('payfast/redirect/cancel', [ '_secure' => true ]);
     }
     /**
      * getPaidNotifyUrl
      */
     public function getPaidNotifyUrl()
     {
-        return $this->_urlBuilder->getUrl( 'payfast/notify', array( '_secure' => true ) );
+        return $this->_urlBuilder->getUrl('payfast/notify', [ '_secure' => true ]);
     }
 
     /**
@@ -135,7 +138,6 @@ class Config extends AbstractConfig
         return parent::isMethodAvailable($methodCode);
     }
 
-
     /**
      * Return buyer country codes supported by PayFast
      *
@@ -147,7 +149,7 @@ class Config extends AbstractConfig
     }
 
     /**
-     * Return merchant country code, use default country if it not specified in General settings
+     * Return merchant country code, use default country if it's not specified in General settings
      *
      * @return string
      */
@@ -229,14 +231,13 @@ class Config extends AbstractConfig
     {
         $paymentAction = null;
         $pre = __METHOD__ . ' : ';
-        $this->_logger->debug( $pre . 'bof' );
+        $this->_logger->debug($pre . 'bof');
 
-        $action = $this->getValue( 'paymentAction' );
+        $action = $this->getValue('paymentAction');
 
-        $this->_logger->debug( $pre . 'payment action is : ' . $action );
+        $this->_logger->debug($pre . 'payment action is : ' . $action);
 
-        switch ( $action )
-        {
+        switch ($action) {
             case self::PAYMENT_ACTION_AUTH:
                 $paymentAction = self::ACTION_AUTHORIZE;
                 break;
@@ -248,7 +249,7 @@ class Config extends AbstractConfig
                 break;
         }
 
-        $this->_logger->debug( $pre . 'eof : paymentAction is ' . $paymentAction );
+        $this->_logger->debug($pre . 'eof : paymentAction is ' . $paymentAction);
 
         return $paymentAction;
     }
@@ -264,13 +265,13 @@ class Config extends AbstractConfig
         $supported = false;
         $pre = __METHOD__ . ' : ';
 
-        $this->_logger->debug($pre . "bof and code: {$code}" );
+        $this->_logger->debug($pre . "bof and code: {$code}");
 
         if (in_array($code, $this->_supportedCurrencyCodes)) {
             $supported = true;
         }
 
-        $this->_logger->debug( $pre . "eof and supported : {$supported}" );
+        $this->_logger->debug($pre . "eof and supported : {$supported}");
 
         return $supported;
     }
