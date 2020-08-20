@@ -21,12 +21,15 @@ use Magento\Framework\Registry;
 use Magento\Framework\UrlInterface;
 use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\Method\Logger;
+use Magento\Quote\Api\Data\CartInterface;
 use Magento\Quote\Model\Quote;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\TransactionRepositoryInterface;
 use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -233,7 +236,7 @@ class Payfast
      * Store setter
      * Also updates store ID in config object
      *
-     * @param \Magento\Store\Model\Store|int $store
+     * @param Store|int $store
      *
      * @return $this
      */
@@ -275,11 +278,11 @@ class Payfast
     /**
      * Check whether payment method can be used
      *
-     * @param \Magento\Quote\Api\Data\CartInterface|Quote|null $quote
+     * @param CartInterface|Quote|null $quote
      *
      * @return bool
      */
-    public function isAvailable(\Magento\Quote\Api\Data\CartInterface $quote = null)
+    public function isAvailable(CartInterface $quote = null)
     {
         return parent::isAvailable($quote) && $this->_config->isMethodAvailable();
     }
@@ -430,7 +433,7 @@ class Payfast
      *
      * @param OrderPaymentInterface $payment
      *
-     * @return false|\Magento\Sales\Api\Data\TransactionInterface
+     * @return false|TransactionInterface
      */
     protected function getOrderTransaction($payment)
     {

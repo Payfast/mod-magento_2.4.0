@@ -12,6 +12,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Store\Api\StoreManagementInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -56,7 +57,7 @@ class Config extends AbstractConfig
     /**
      * @param ScopeConfigInterface $scopeConfig
      * @param Data $directoryHelper
-     * @param StoreManagerInterface $storeManager
+     * @param StoreManagementInterface $storeManager
      * @param LoggerInterface $logger
      * @param Repository $assetRepo
      * @param UrlInterface $urlBuilder
