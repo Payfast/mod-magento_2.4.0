@@ -154,7 +154,7 @@ class Index extends \Payfast\Payfast\Controller\AbstractPayfast implements CsrfA
         try {
 
             $invoice = $this->_order->prepareInvoice();
-
+            $invoice->setBaseGrandTotal($this->_order->getBaseGrandTotal());
             $invoice->register()->capture();
 
             /** @var \Magento\Framework\DB\Transaction $transaction */
