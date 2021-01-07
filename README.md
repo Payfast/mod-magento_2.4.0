@@ -1,6 +1,6 @@
 # mod-magento_2.3.5
 
-PayFast Magento Module v1.1.1 for Magento v2.3.0 - 2.3.5
+PayFast Magento Module v1.1.1 for Magento v2.3.0 - 2.4.0
 -----------------------------------------------------------------------------
 Copyright (c) 2008 PayFast (Pty) Ltd
 You (being anyone who is not PayFast (Pty) Ltd) may download and use this plugin / code in your own website in conjunction with a registered and active PayFast account. If your PayFast account is terminated for any reason, you may not use this plugin / code or part thereof.
