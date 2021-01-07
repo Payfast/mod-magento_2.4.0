@@ -12,33 +12,43 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\View\Asset\Repository;
 use Magento\Store\Api\StoreManagementInterface;
-use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Config model that is aware of all \Payfast\Payfast payment methods
  * Works with PayFast-specific system configuration
+ *
  * @SuppressWarnings(PHPMD.ExcesivePublicCount)
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
 class Config extends AbstractConfig
 {
 
-    /** @var Payfast this is a model which we will use. */
+    /**
+ * @var Payfast this is a model which we will use.
+*/
     const METHOD_CODE = 'payfast';
 
-    /** @var string should this module send confirmation email */
+    /**
+ * @var string should this module send confirmation email
+*/
     const KEY_SEND_CONFIRMATION_EMAIL = 'allowed_confirmation_email';
 
-    /** @var string should this module send invoice email */
+    /**
+ * @var string should this module send invoice email
+*/
     const KEY_SEND_INVOICE_EMAIL = 'allowed_confirmation_email';
 
-    /** Core data  */
+    /**
+     * Core data
+     */
     protected $directoryHelper;
 
     protected $_supportedBuyerCountryCodes = ['ZA'];
 
-    /** Currency codes supported by PayFast methods @var string[] */
+    /**
+     * Currency codes supported by PayFast methods @var string[]
+     */
     protected $_supportedCurrencyCodes = ['ZAR'];
     /**
      * @var LoggerInterface
@@ -55,13 +65,13 @@ class Config extends AbstractConfig
     protected $_assetRepo;
 
     /**
-     * @param ScopeConfigInterface $scopeConfig
-     * @param Data $directoryHelper
+     * @param ScopeConfigInterface     $scopeConfig
+     * @param Data                     $directoryHelper
      * @param StoreManagementInterface $storeManager
-     * @param LoggerInterface $logger
-     * @param Repository $assetRepo
-     * @param UrlInterface $urlBuilder
-     * @param array $params
+     * @param LoggerInterface          $logger
+     * @param Repository               $assetRepo
+     * @param UrlInterface             $urlBuilder
+     * @param array                    $params
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
@@ -92,8 +102,8 @@ class Config extends AbstractConfig
     /**
      * Checkout redirect URL getter for onepage checkout (hardcode)
      *
-     * @see \Magento\Checkout\Controller\Onepage::savePaymentAction()
-     * @see \Magento\Quote\Model\Quote\Payment::getCheckoutRedirectUrl()
+     * @see    \Magento\Checkout\Controller\Onepage::savePaymentAction()
+     * @see    \Magento\Quote\Model\Quote\Payment::getCheckoutRedirectUrl()
      * @return string
      */
     public function getCheckoutRedirectUrl()
@@ -130,8 +140,8 @@ class Config extends AbstractConfig
      * Check whether method available for checkout or not
      * Logic based on merchant country, methods dependence
      *
-     * @param string|null $methodCode
-     * @return bool
+     * @param                                        string|null $methodCode
+     * @return                                       bool
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function isMethodAvailable($methodCode = null)
@@ -163,8 +173,8 @@ class Config extends AbstractConfig
      * Check whether method supported for specified country or not
      * Use $_methodCode and merchant country by default
      *
-     * @param string|null $method
-     * @param string|null $countryCode
+     * @param  string|null $method
+     * @param  string|null $countryCode
      * @return bool
      */
     public function isMethodSupportedForCountry($method = null, $countryCode = null)
@@ -183,8 +193,8 @@ class Config extends AbstractConfig
     /**
      * Return list of allowed methods for specified country iso code
      *
-     * @param string|null $countryCode 2-letters iso code
-     * @return array
+     * @param                                         string|null $countryCode 2-letters iso code
+     * @return                                        array
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
     public function getCountryMethods($countryCode = null)
@@ -239,15 +249,15 @@ class Config extends AbstractConfig
         $this->_logger->debug($pre . 'payment action is : ' . $action);
 
         switch ($action) {
-            case self::PAYMENT_ACTION_AUTH:
-                $paymentAction = self::ACTION_AUTHORIZE;
-                break;
-            case self::PAYMENT_ACTION_SALE:
-                $paymentAction = self::ACTION_AUTHORIZE_CAPTURE;
-                break;
-            case self::PAYMENT_ACTION_ORDER:
-                $paymentAction = self::ACTION_ORDER;
-                break;
+        case self::PAYMENT_ACTION_AUTH:
+            $paymentAction = self::ACTION_AUTHORIZE;
+            break;
+        case self::PAYMENT_ACTION_SALE:
+            $paymentAction = self::ACTION_AUTHORIZE_CAPTURE;
+            break;
+        case self::PAYMENT_ACTION_ORDER:
+            $paymentAction = self::ACTION_ORDER;
+            break;
         }
 
         $this->_logger->debug($pre . 'eof : paymentAction is ' . $paymentAction);
@@ -258,7 +268,7 @@ class Config extends AbstractConfig
     /**
      * Check whether specified currency code is supported
      *
-     * @param string $code
+     * @param  string $code
      * @return bool
      */
     public function isCurrencyCodeSupported($code)
@@ -278,25 +288,11 @@ class Config extends AbstractConfig
     }
 
     /**
-     * Check whether specified locale code is supported. Fallback to en_US
-     *
-     * @param string|null $localeCode
-     * @return string
-     */
-    protected function _getSupportedLocaleCode($localeCode = null)
-    {
-        if (!$localeCode || !in_array($localeCode, $this->_supportedImageLocales)) {
-            return 'en_US';
-        }
-        return $localeCode;
-    }
-
-    /**
      * _mapPayFastFieldset
      * Map PayFast config fields
      *
-     * @param string $fieldName
-     * @return string|null
+     * @param                                        string $fieldName
+     * @return                                       string|null
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     protected function _mapPayFastFieldset($fieldName)
@@ -307,8 +303,8 @@ class Config extends AbstractConfig
     /**
      * Map any supported payment method into a config path by specified field name
      *
-     * @param string $fieldName
-     * @return string|null
+     * @param                                        string $fieldName
+     * @return                                       string|null
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */

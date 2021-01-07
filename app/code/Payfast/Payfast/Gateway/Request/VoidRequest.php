@@ -47,11 +47,10 @@ class VoidRequest implements BuilderInterface
         $this->logger->debug($pre . 'bof');
 
         if (!isset($buildSubject['payment']) || !$buildSubject['payment'] instanceof PaymentDataObjectInterface
-          ) {
+        ) {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
 
-        /** @var PaymentDataObjectInterface $paymentDO */
         $paymentDO = $buildSubject['payment'];
 
         $order = $paymentDO->getOrder();

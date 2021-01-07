@@ -7,6 +7,7 @@
 namespace Payfast\Payfast\Helper;
 
 use Magento\Framework\App\Config\BaseFactory;
+use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Quote\Model\Quote;
 use Magento\Store\Model\Store;
@@ -17,7 +18,7 @@ use \Magento\Payment\Helper\Data as helperData;
 /**
  * PayFast Data helper
  */
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends AbstractHelper
 {
 
     /**
@@ -48,10 +49,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_logger;
 
     /**
-     * @param Context $context
-     * @param helperData $paymentData
+     * @param Context     $context
+     * @param helperData  $paymentData
      * @param BaseFactory $configFactory
-     * @param array $methodCodes
+     * @param array       $methodCodes
      */
     public function __construct(Context $context, helperData $paymentData, BaseFactory $configFactory, array $methodCodes)
     {
@@ -87,7 +88,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      * Retrieve available billing agreement methods
      *
      * @param null|string|bool|int|Store $store
-     * @param Quote|null $quote
+     * @param Quote|null                 $quote
      *
      * @return MethodInterface[]
      */
@@ -96,7 +97,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $pre = __METHOD__ . " : ";
         $this->_logger->debug($pre . 'bof');
         $result = [ ];
-        foreach ($this->_paymentData->getStoreMethods($store, $quote) as $method) {
+
+//        foreach ($this->_paymentData->getStoreMethods($store, $quote) as $method) {
+        foreach ($this->_paymentData->getPaymentMethodList() as $method) {
             if ($method instanceof MethodInterface) {
                 $result[] = $method;
             }

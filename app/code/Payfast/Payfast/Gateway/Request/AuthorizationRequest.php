@@ -6,6 +6,7 @@
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
 
+use Magento\Framework\App\ObjectManager;
 use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Request\BuilderInterface;
@@ -15,7 +16,9 @@ use Psr\Log\LoggerInterface;
 class AuthorizationRequest implements BuilderInterface
 {
 
-    /** @var Config  */
+    /**
+     * @var Config
+     */
     private $payfastConfig;
 
     /**
@@ -23,13 +26,15 @@ class AuthorizationRequest implements BuilderInterface
      */
     private $config;
 
-    /** @var LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     /**
      * @param ConfigInterface $config
      * @param LoggerInterface $logger
-     * @param Config $payfastConfig
+     * @param Config          $payfastConfig
      */
     public function __construct(ConfigInterface $config, LoggerInterface $logger, Config $payfastConfig)
     {
@@ -44,7 +49,7 @@ class AuthorizationRequest implements BuilderInterface
      * if this was a cc payment then we would append cc fields in and dispatch it.
      * Builds ENV request
      *
-     * @param array $buildSubject
+     * @param  array $buildSubject
      * @return array
      * @throws \Exception
      */
@@ -60,8 +65,6 @@ class AuthorizationRequest implements BuilderInterface
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
         try {
-
-            /** @var PaymentDataObjectInterface $payment */
             $payment = $buildSubject['payment'];
 
             $order = $payment->getOrder();
@@ -132,7 +135,7 @@ class AuthorizationRequest implements BuilderInterface
      */
     private function getAppVersion()
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $objectManager = ObjectManager::getInstance();
         $version = $objectManager->get('Magento\Framework\App\ProductMetadataInterface')->getVersion();
 
         return  (preg_match('([0-9])', $version)) ? $version : '2.0.0';

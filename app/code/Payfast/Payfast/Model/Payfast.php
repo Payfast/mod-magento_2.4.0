@@ -7,8 +7,9 @@
  */
 namespace Payfast\Payfast\Model;
 
-include_once dirname(__FILE__) . '/../Model/payfast_common.inc';
+require_once dirname(__FILE__) . '/../Model/payfast_common.inc';
 
+use JetBrains\PhpStorm\Pure;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Api\ExtensionAttributesFactory;
@@ -26,19 +27,18 @@ use Magento\Quote\Model\Quote;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Sales\Api\Data\TransactionInterface;
 use Magento\Sales\Api\TransactionRepositoryInterface;
-use Magento\Sales\Model\Order\Payment;
 use Magento\Sales\Model\Order\Payment\Transaction;
 use Magento\Sales\Model\Order\Payment\Transaction\BuilderInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 
  /**
- * PayFast Module.
- *
- * @method \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
- * @SuppressWarnings(PHPMD.TooManyFields)
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
+  * PayFast Module.
+  *
+  * @method                                         \Magento\Quote\Api\Data\PaymentMethodExtensionInterface getExtensionAttributes()
+  * @SuppressWarnings(PHPMD.TooManyFields)
+  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+  */
 
 class Payfast
 {
@@ -57,22 +57,10 @@ class Payfast
      */
     protected $_infoBlockType = 'Payfast\Payfast\Block\Payment\Info';
 
-    /** @var string */
+    /**
+     * @var string
+     */
     protected $_configType = 'Payfast\Payfast\Model\Config';
-
-    /**
-     * Payment Method feature
-     *
-     * @var bool
-     */
-    protected $_isInitializeNeeded = true;
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_isGateway = false;
 
     /**
      * Availability option
@@ -86,21 +74,7 @@ class Payfast
      *
      * @var bool
      */
-    protected $_canAuthorize = true;
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
     protected $_canCapture = true;
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canVoid = false;
 
     /**
      * Availability option
@@ -110,45 +84,11 @@ class Payfast
     protected $_canUseInternal = true;
 
     /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canUseCheckout = true;
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canFetchTransactionInfo = true;
-
-    /**
-     * Availability option
-     *
-     * @var bool
-     */
-    protected $_canReviewPayment = true;
-
-    /**
      * Website Payments Pro instance
      *
      * @var Config $config
      */
     protected $_config;
-    /**
-     * Payment additional information key for payment action
-     *
-      * @var string
-     */
-    protected $_isOrderPaymentActionKey = 'is_order_action';
-
-    /**
-     * Payment additional information key for number of used authorizations
-     *
-     * @var string
-     */
-    protected $_authorizationCountKey = 'authorization_count';
 
     /**
      * @var StoreManagerInterface
@@ -181,13 +121,6 @@ class Payfast
     protected $transactionBuilder;
 
     /**
-     * @param Context $context
-     * @param Registry $registry
-     * @param ExtensionAttributesFactory $extensionFactory
-     * @param AttributeValueFactory $customAttributeFactory
-     * @param Data $paymentData
-     * @param ScopeConfigInterface $scopeConfig
-     * @param Logger $logger
      * @param ConfigFactory $configFactory
      * @param StoreManagerInterface $storeManager
      * @param UrlInterface $urlBuilder
@@ -195,29 +128,16 @@ class Payfast
      * @param LocalizedExceptionFactory $exception
      * @param TransactionRepositoryInterface $transactionRepository
      * @param BuilderInterface $transactionBuilder
-     * @param AbstractResource $resource
-     * @param AbstractDb $resourceCollection
-     * @param array $data
      * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
-        ExtensionAttributesFactory $extensionFactory,
-        AttributeValueFactory $customAttributeFactory,
-        Data $paymentData,
-        ScopeConfigInterface $scopeConfig,
-        Logger $logger,
         ConfigFactory $configFactory,
         StoreManagerInterface $storeManager,
         UrlInterface $urlBuilder,
         Session $checkoutSession,
         LocalizedExceptionFactory $exception,
         TransactionRepositoryInterface $transactionRepository,
-        BuilderInterface $transactionBuilder,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
-        array $data = [ ]
+        BuilderInterface $transactionBuilder
     ) {
         $this->_storeManager = $storeManager;
         $this->_urlBuilder = $urlBuilder;
@@ -242,6 +162,7 @@ class Payfast
      * @param Store|int $store
      *
      * @return $this
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function setStore($store)
     {
@@ -270,7 +191,7 @@ class Payfast
     /**
      * Payment action getter compatible with payment model
      *
-     * @see \Magento\Sales\Model\Payment::place()
+     * @see    \Magento\Sales\Model\Payment::place()
      * @return string
      */
     public function getConfigPaymentAction()
@@ -310,7 +231,9 @@ class Payfast
 
     /**
      * this where we compile data posted by the form to payfast
+     *
      * @return array
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function getStandardCheckoutFormFields()
     {
@@ -394,7 +317,7 @@ class Payfast
      *
      * @return string
      */
-    private function getAppVersion()
+    private function getAppVersion(): string
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $version = $objectManager->get('Magento\Framework\App\ProductMetadataInterface')->getVersion();
@@ -404,7 +327,7 @@ class Payfast
     /**
      * getTotalAmount
      */
-    public function getTotalAmount($order)
+    public function getTotalAmount($order): string
     {
         if ($this->_config->getValue('use_store_currency')) {
             $price = $this->getNumberFormat($order->getGrandTotal());
@@ -454,12 +377,12 @@ class Payfast
         return $this->_urlBuilder->getUrl('payfast/redirect');
     }
     /**
-    * Checkout redirect URL getter for onepage checkout (hardcode)
-    *
-    * @see \Magento\Checkout\Controller\Onepage::savePaymentAction()
-    * @see Quote\Payment::getCheckoutRedirectUrl()
-    * @return string
-    */
+     * Checkout redirect URL getter for onepage checkout (hardcode)
+     *
+     * @see    \Magento\Checkout\Controller\Onepage::savePaymentAction()
+     * @see    Quote\Payment::getCheckoutRedirectUrl()
+     * @return string
+     */
     public function getCheckoutRedirectUrl()
     {
         $pre = __METHOD__ . " : ";

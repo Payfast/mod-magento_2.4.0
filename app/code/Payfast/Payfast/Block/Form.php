@@ -9,44 +9,60 @@ namespace Payfast\Payfast\Block;
 use Magento\Customer\Helper\Session\CurrentCustomer;
 use Magento\Framework\Locale\ResolverInterface;
 use Magento\Framework\View\Element\Template\Context;
+use Payfast\Payfast\Helper\Data;
 use Payfast\Payfast\Model\Config;
+use Payfast\Payfast\Model\PayfastConfigProvider;
 
 class Form extends \Magento\Payment\Block\Form
 {
-    /** @var string Payment method code */
+    /**
+     * @var string Payment method code
+     */
     protected $_methodCode = Config::METHOD_CODE;
 
-    /** @var \Payfast\Payfast\Helper\Data */
+    /**
+     * @var Data
+     */
     protected $_payfastData;
 
-    /** @var \Payfast\Payfast\Model\ConfigFactory */
+    /**
+     * @var \Payfast\Payfast\Model\ConfigFactory
+     */
     protected $payfastConfigFactory;
 
-    /** @var ResolverInterface */
+    /**
+     * @var ResolverInterface
+     */
     protected $_localeResolver;
 
-    /** @var \Payfast\Payfast\Model\Config */
+    /**
+     * @var \Payfast\Payfast\Model\Config
+     */
     protected $_config;
 
-    /** @var bool */
+    /**
+     * @var bool
+     */
     protected $_isScopePrivate;
 
-    /** @var CurrentCustomer */
+    /**
+     * @var CurrentCustomer
+     */
     protected $currentCustomer;
 
     /**
-     * @param Context $context
+     * @param Context                              $context
      * @param \Payfast\Payfast\Model\ConfigFactory $payfastConfigFactory
-     * @param ResolverInterface $localeResolver
-     * @param \Payfast\Payfast\Helper\Data $payfastData
-     * @param CurrentCustomer $currentCustomer
-     * @param array $data
+     * @param ResolverInterface                    $localeResolver
+     * @param Data         $payfastData
+     * @param CurrentCustomer                      $currentCustomer
+     * @param array                                $data
      */
     public function __construct(
         Context $context,
-        \Payfast\Payfast\Model\PayfastConfigProvider $payfastConfigFactory,
+        PayfastConfigProvider $payfastConfigFactory,
         ResolverInterface $localeResolver,
-        \Payfast\Payfast\Helper\Data $payfastData,
+        Data $payfastData,
         CurrentCustomer $currentCustomer,
         array $data = []
     ) {

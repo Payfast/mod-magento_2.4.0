@@ -37,7 +37,9 @@ class PayfastConfigProvider implements ConfigProviderInterface
      */
     protected $_logger;
 
-    /** @var PayfastHelper */
+    /**
+     * @var PayfastHelper 
+     */
     protected $payfastHelper;
 
     /**
@@ -58,12 +60,12 @@ class PayfastConfigProvider implements ConfigProviderInterface
     protected $paymentHelper;
 
     /**
-     * @param LoggerInterface $logger
-     * @param ConfigFactory $configFactory
+     * @param LoggerInterface   $logger
+     * @param ConfigFactory     $configFactory
      * @param ResolverInterface $localeResolver
-     * @param CurrentCustomer $currentCustomer
-     * @param PayfastHelper $payfastHelper
-     * @param PaymentHelper $paymentHelper
+     * @param CurrentCustomer   $currentCustomer
+     * @param PayfastHelper     $payfastHelper
+     * @param PaymentHelper     $paymentHelper
      *
      * @throws LocalizedException
      */
@@ -123,7 +125,7 @@ class PayfastConfigProvider implements ConfigProviderInterface
     /**
      * Return redirect URL for method
      *
-     * @param string $code
+     * @param  string $code
      * @return mixed
      */
     protected function getMethodRedirectUrl($code)
@@ -141,7 +143,7 @@ class PayfastConfigProvider implements ConfigProviderInterface
     /**
      * Return billing agreement code for method
      *
-     * @param string $code
+     * @param  string $code
      * @return null|string
      */
     protected function getBillingAgreementCode($code)

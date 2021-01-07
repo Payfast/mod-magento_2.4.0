@@ -6,7 +6,8 @@
  */
 namespace Payfast\Payfast\Model;
 
-use Magento\Payment\Model\Method\ConfigInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Store\Model\ScopeInterface;
 
@@ -15,7 +16,8 @@ use Magento\Store\Model\ScopeInterface;
  */
 abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config implements ConfigInterface
 {
-    /**#@+
+    /**
+* #@+
      * Payment actions
      */
     const PAYMENT_ACTION_SALE = 'Sale';
@@ -30,7 +32,9 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
 
     const ACTION_AUTHORIZE_CAPTURE = 'authorize_capture';
 
-    /**#@-*/
+    /**
+     * #@-
+     */
 
     /**
      * Current payment method code
@@ -54,15 +58,15 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
     /**
      * Core store config
      *
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var ScopeConfigInterface
      */
     public $_scopeConfig;
 
     /**
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig
     ) {
         parent::__construct($scopeConfig, self::getMethodCode());
         $this->_scopeConfig = $scopeConfig;
@@ -140,7 +144,7 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
      * Returns payment configuration value
      *
      * @param string $key
-     * @param null $storeId
+     * @param null   $storeId
      *
      * @return null|string
      *
@@ -244,25 +248,25 @@ abstract class AbstractConfig extends \Magento\Payment\Gateway\Config\Config imp
     public function isMethodActive($method)
     {
         switch ($method) {
-            case Config::METHOD_CODE:
-                $isEnabled = $this->_scopeConfig->isSetFlag(
+        case Config::METHOD_CODE:
+            $isEnabled = $this->_scopeConfig->isSetFlag(
+                'payment/' . $this->getMethodCode() . '/active',
+                ScopeInterface::SCOPE_STORE,
+                $this->_storeId
+            ) ||
+                $this->_scopeConfig->isSetFlag(
                     'payment/' . $this->getMethodCode() . '/active',
                     ScopeInterface::SCOPE_STORE,
                     $this->_storeId
-                ) ||
-                    $this->_scopeConfig->isSetFlag(
-                        'payment/' . $this->getMethodCode() . '/active',
-                        ScopeInterface::SCOPE_STORE,
-                        $this->_storeId
-                    );
-                $method = $this->getMethodCode();
-                break;
-            default:
-                $isEnabled = $this->_scopeConfig->isSetFlag(
-                    "payment/{$method}/active",
-                    ScopeInterface::SCOPE_STORE,
-                    $this->_storeId
                 );
+            $method = $this->getMethodCode();
+            break;
+        default:
+            $isEnabled = $this->_scopeConfig->isSetFlag(
+                "payment/{$method}/active",
+                ScopeInterface::SCOPE_STORE,
+                $this->_storeId
+            );
         }
 
         return $this->isMethodSupportedForCountry($method) && $isEnabled;

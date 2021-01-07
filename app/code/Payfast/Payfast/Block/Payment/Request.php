@@ -7,18 +7,21 @@
 
 namespace Payfast\Payfast\Block\Payment;
 
+use Magento\Checkout\Model\Session;
 use Magento\Framework\Filesystem\Directory\ReadFactory;
 use Magento\Framework\Module\Dir\Reader;
+use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Sales\Model\OrderFactory;
 use Payfast\Payfast\Helper\Data;
 use Payfast\Payfast\Model\Payfast;
-use Magento\Checkout\Model\Session;
 
-class Request extends \Magento\Framework\View\Element\Template
+class Request extends Template
 {
 
-    /** @var Payfast $_paymentMethod*/
+    /**
+     * @var Payfast $_paymentMethod
+     */
     protected $_paymentMethod;
 
     /**
@@ -31,21 +34,25 @@ class Request extends \Magento\Framework\View\Element\Template
      */
     protected $_checkoutSession;
 
-    /** @var ReadFactory  $readFactory*/
+    /**
+     * @var ReadFactory  $readFactory
+     */
     protected $readFactory;
 
-    /** @var Reader $reader */
+    /**
+     * @var Reader $reader
+     */
     protected $reader;
 
     /**
-     * @param Context $context
+     * @param Context      $context
      * @param OrderFactory $orderFactory
-     * @param Session $checkoutSession
-     * @param Data $pfHelper
-     * @param ReadFactory $readFactory
-     * @param Reader $reader
-     * @param Payfast $paymentMethod
-     * @param array $data
+     * @param Session      $checkoutSession
+     * @param Data         $pfHelper
+     * @param ReadFactory  $readFactory
+     * @param Reader       $reader
+     * @param Payfast      $paymentMethod
+     * @param array        $data
      */
     public function __construct(
         Context $context,

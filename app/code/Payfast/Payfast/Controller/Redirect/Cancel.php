@@ -6,6 +6,7 @@
  */
 namespace Payfast\Payfast\Controller\Redirect;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Result\PageFactory;
 use Payfast\Payfast\Controller\AbstractPayfast;
 
@@ -17,7 +18,9 @@ use Payfast\Payfast\Controller\AbstractPayfast;
  */
 class Cancel extends AbstractPayfast
 {
-    /** @var PageFactory */
+    /**
+     * @var PageFactory
+     */
     protected $resultPageFactory;
 
     /**
@@ -44,7 +47,7 @@ class Cancel extends AbstractPayfast
             $this->checkoutSession->restoreQuote();
 
             $this->_redirect('checkout/cart');
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->_logger->error($pre . $e->getMessage());
 
             $this->messageManager->addExceptionMessage($e, $e->getMessage());

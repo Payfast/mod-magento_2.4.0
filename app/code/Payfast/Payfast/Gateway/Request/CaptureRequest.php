@@ -47,11 +47,10 @@ class CaptureRequest implements BuilderInterface
         $this->logger->debug($pre . 'bof');
 
         if (!isset($buildSubject['payment']) || !$buildSubject['payment'] instanceof PaymentDataObjectInterface
-          ) {
+        ) {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
 
-        /** @var PaymentDataObjectInterface $paymentDO */
         $paymentDO = $buildSubject['payment'];
 
         $order = $paymentDO->getOrder();
@@ -67,7 +66,6 @@ class CaptureRequest implements BuilderInterface
         return [
               'TXN_TYPE' => 'S',
               'TXN_ID' => $payment->getLastTransId(),
-
               'MERCHANT_KEY' => $this->config->getValue('merchant_gateway_key', $order->getStoreId())
           ];
     }

@@ -6,6 +6,7 @@
  */
 namespace Payfast\Payfast\Controller\Redirect;
 
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\View\Result\PageFactory;
 use Payfast\Payfast\Controller\AbstractPayfast;
 use Payfast\Payfast\Model\Config;
@@ -18,16 +19,6 @@ use Payfast\Payfast\Model\Config;
  */
 class Index extends AbstractPayfast
 {
-    /** @var PageFactory */
-    protected $resultPageFactory;
-
-    /**
-     * Config method type
-     *
-     * @var string
-     */
-    protected $_configMethod = Config::METHOD_CODE;
-
     /**
      * execute
      * this method illustrate magento2 super power.
@@ -42,7 +33,7 @@ class Index extends AbstractPayfast
 
         try {
             $this->_initCheckout();
-        } catch (\Magento\Framework\Exception\LocalizedException $e) {
+        } catch (LocalizedException $e) {
             $this->_logger->error($pre . $e->getMessage());
             $this->messageManager->addExceptionMessage($e, $e->getMessage());
             $this->_redirect('checkout/cart');

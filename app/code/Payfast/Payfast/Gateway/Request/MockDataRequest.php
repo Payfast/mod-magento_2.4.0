@@ -18,7 +18,7 @@ class MockDataRequest implements BuilderInterface
      *
      * Builds ENV request
      *
-     * @param array $buildSubject
+     * @param  array $buildSubject
      * @return array
      */
     public function build(array $buildSubject)
@@ -27,7 +27,9 @@ class MockDataRequest implements BuilderInterface
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
 
-        /** @var PaymentDataObjectInterface $paymentDO */
+        /**
+ * @var PaymentDataObjectInterface $paymentDO 
+*/
         $paymentDO = $buildSubject['payment'];
         $payment = $paymentDO->getPayment();
 

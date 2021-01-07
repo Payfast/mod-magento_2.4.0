@@ -30,7 +30,7 @@ class SalesOrderBeforeSaveObserver implements ObserverInterface
      * born out of necessity to force order status to not be in processing.
      * provided that user has not paid.
      *
-     * @param Observer $observer
+     * @param  Observer $observer
      * @return $this
      * @throws LocalizedException
      */
@@ -39,13 +39,14 @@ class SalesOrderBeforeSaveObserver implements ObserverInterface
         $pre = __METHOD__ . " : ";
         $this->_logger->debug($pre . 'bof');
 
-        /** @var Order $order */
+        /**
+ * @var Order $order 
+*/
         $order = $observer->getEvent()->getOrder();
 
-        if (
-            $order->getPayment()->getMethodInstance()->getCode() == Config::METHOD_CODE &&
-            $order->getState() == Order::STATE_PROCESSING &&
-            empty($order->getPayment()->getAdditionalInformation('pf_payment_id'))
+        if ($order->getPayment()->getMethodInstance()->getCode() == Config::METHOD_CODE 
+            && $order->getState() == Order::STATE_PROCESSING 
+            && empty($order->getPayment()->getAdditionalInformation('pf_payment_id'))
         ) {
             $this->_logger->debug($pre . 'setting order status and preventing sending of emails.');
 

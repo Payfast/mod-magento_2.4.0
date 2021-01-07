@@ -4,21 +4,27 @@
  * You (being anyone who is not PayFast (Pty) Ltd) may download and use this plugin / code in your own website in conjunction with a registered and active PayFast account. If your PayFast account is terminated for any reason, you may not use this plugin / code or part thereof.
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
+
 namespace Payfast\Payfast\Controller;
 
-include_once dirname(__FILE__) . '/../Model/payfast_common.inc';
+require_once dirname(__FILE__) . '/../Model/payfast_common.inc';
 
-use Magento\Checkout\Controller\Express\RedirectLoginInterface;
-use Magento\Framework\App\Action\Action as AppAction;
+use Magento\Framework\App\Action\Action;
+use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ActionFlag;
 use Magento\Framework\App\ActionInterface;
+use Magento\Framework\App\Response\RedirectInterface;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\DB\TransactionFactory;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
+use Magento\Framework\ObjectManagerInterface;
 use Magento\Framework\Session\Generic;
 use Magento\Framework\Url\Helper\Data;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Quote\Model\Quote;
-use \Magento\Customer\Model\Session;
+use Magento\Quote\Model\QuoteRepository;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\OrderFactory;
@@ -29,18 +35,22 @@ use Payfast\Payfast\Model\Payfast;
 use Psr\Log\LoggerInterface;
 
 /**
- * Abstract Express Checkout Controller
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * Abstract PayFast Checkout Controller
  */
-abstract class AbstractPayfast extends AppAction implements RedirectLoginInterface, ActionInterface
+
+abstract class AbstractPayfast implements ActionInterface
 {
     /**
      * Internal cache of checkout models
      *
      * @var array
      */
-    protected $_checkoutTypes = [ ];
+    protected $_checkoutTypes = [];
 
+    /**
+    * @var ObjectManagerInterface and I could place this as property type but it will break lower php versions
+    */
+    protected $_objectManager;
     /**
      * @var Config
      */
@@ -52,13 +62,20 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $_quote = false;
 
     /**
+     * @var RedirectInterface
+     */
+    protected $_redirect;
+
+    /**
      * Config mode type
      *
      * @var string
      */
     protected $_configType = 'Payfast\Payfast\Model\Config';
 
-    /** Config method type @var string */
+    /**
+     * Config method type @var string
+     */
     protected $_configMethod = Config::METHOD_CODE;
 
     /**
@@ -67,13 +84,19 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      * @var string
      */
     protected $_checkoutType;
+    /**
+     * @var ActionFlag
+     */
+    protected $_actionFlag;
 
     /**
      * @var Session
      */
     protected $customerSession;
 
-    /** @var \Magento\Checkout\Model\Session $checkoutSession */
+    /**
+     * @var \Magento\Checkout\Model\Session $checkoutSession
+     */
     protected $checkoutSession;
 
     /**
@@ -101,13 +124,19 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      */
     protected $_logger;
 
-    /** @var  \Magento\Sales\Model\Order $_order */
+    /**
+     * @var \Magento\Sales\Model\Order $_order
+     */
     protected $_order;
 
-    /** @var PageFactory  */
+    /**
+     * @var PageFactory
+     */
     protected $_pageFactory;
 
-    /** @var Transaction  $salesTransactionResourceModel*/
+    /**
+     * @var Transaction $salesTransactionResourceModel
+     */
     protected $salesTransactionResourceModel;
 
     /**
@@ -115,7 +144,9 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      */
     protected $transactionFactory;
 
-    /** @var Payfast $paymentMethod*/
+    /**
+     * @var Payfast $paymentMethod
+     */
     protected $paymentMethod;
 
     protected $pageFactory;
@@ -123,6 +154,18 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     protected $orderSender;
 
     protected $invoiceSender;
+
+    /**
+     * @var ResponseInterface
+     */
+    protected $_response;
+
+    protected $_request;
+
+    /**
+     * @var MessageManagerInterface
+     */
+    protected $messageManager;
 
     /**
      * @param Context $context
@@ -161,11 +204,12 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
         $this->_logger = $logger;
 
         $this->_logger->debug($pre . 'bof');
-
+        $this->_request = $context->getRequest();
+        $this->_response = $context->getResponse();
         $this->customerSession = $customerSession;
         $this->checkoutSession = $checkoutSession;
         $this->orderFactory = $orderFactory;
-        $this->payfastSession = $payfastSession;
+        $this->_payfastSession = $payfastSession;
         $this->urlHelper = $urlHelper;
         $this->orderResourceModel = $orderResourceModel;
         $this->pageFactory = $pageFactory;
@@ -175,12 +219,18 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
         $this->invoiceSender = $invoiceSender;
         $this->salesTransactionResourceModel = $salesTransactionResourceModel;
 
-        parent::__construct($context);
+        $parameters = ['params' => [$this->_configMethod]];
+        $this->_objectManager = $context->getObjectManager();
+        $this->_url = $context->getUrl();
+        $this->_actionFlag = $context->getActionFlag();
+        $this->_redirect = $context->getRedirect();
+        $this->_response = $context->getResponse();
+        $this->_actionFlag = $context->getActionFlag();
+        $this->messageManager = $context->getMessageManager();
 
-        $parameters = [ 'params' => [ $this->_configMethod ] ];
         $this->_config = $this->_objectManager->create($this->_configType, $parameters);
 
-        if (! defined('PF_DEBUG')) {
+        if (!defined('PF_DEBUG')) {
             define('PF_DEBUG', $this->getConfigData('debug'));
         }
 
@@ -190,9 +240,9 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     /**
      * Custom getter for payment configuration
      *
-     * @param string $field   i.e merchant_id, server
+     * @param string $field i.e merchant_id, server
      *
-     * @return mixed
+     * @return                                        mixed
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function getConfigData($field)
@@ -236,7 +286,10 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
             $this->checkoutSession->setPayfastQuoteId($this->checkoutSession->getQuoteId());
             $this->checkoutSession->setPayfastSuccessQuoteId($this->checkoutSession->getLastSuccessQuoteId());
             $this->checkoutSession->setPayfastRealOrderId($this->checkoutSession->getLastRealOrderId());
-            $this->checkoutSession->getQuote()->setIsActive(false)->save();
+            $quote = $this->checkoutSession->getQuote()->setIsActive(false);
+            /** @var QuoteRepository $quoteRepository */
+            $quoteRepository = $this->_objectManager->get(QuoteRepository::class);
+            $quoteRepository->save($quote);
         }
 
         $this->_logger->debug($pre . 'eof');
@@ -247,9 +300,9 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
      *
      * @return Generic
      */
-    protected function _getSession()
+    protected function _getSession() : Generic
     {
-        return $this->payfastSession;
+        return $this->_payfastSession;
     }
 
     /**
@@ -277,25 +330,18 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
     }
 
     /**
-     * Returns before_auth_url redirect parameter for customer session
-     * @return null
-     */
-    public function getCustomerBeforeAuthUrl()
-    {
-        return;
-    }
-
-    /**
      * Returns a list of action flags [flag_key] => boolean
+     *
      * @return array
      */
     public function getActionFlagList()
     {
-        return [ ];
+        return [];
     }
 
     /**
      * Returns login url parameter for redirect
+     *
      * @return string
      */
     public function getLoginUrl()
@@ -305,6 +351,7 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
 
     /**
      * Returns action name which requires redirect
+     *
      * @return string
      */
     public function getRedirectActionName()
@@ -322,7 +369,31 @@ abstract class AbstractPayfast extends AppAction implements RedirectLoginInterfa
         $this->_actionFlag->set('', 'no-dispatch', true);
         $this->customerSession->setBeforeAuthUrl($this->_redirect->getRefererUrl());
         $this->getResponse()->setRedirect(
-            $this->urlHelper->addRequestParam($this->orderResourceModel->getLoginUrl(), [ 'context' => 'checkout' ])
+            $this->urlHelper->addRequestParam($this->orderResourceModel->getLoginUrl(), ['context' => 'checkout'])
         );
     }
+
+    /**
+     * handle response
+     *
+     * @return ResponseInterface
+     */
+    public function getResponse(): ResponseInterface
+    {
+        return $this->_response;
+    }
+
+    /**
+     * Used to be part of inherited abstractAction now we need to code it in.
+     *
+     * @param $path
+     * @param array $arguments
+     * @return ResponseInterface
+     */
+    protected function _redirect($path, $arguments = []) : ResponseInterface
+    {
+        $this->_redirect->redirect($this->getResponse(), $path, $arguments);
+        return $this->getResponse();
+    }
+
 }

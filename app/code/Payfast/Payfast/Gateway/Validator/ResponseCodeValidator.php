@@ -16,11 +16,13 @@ class ResponseCodeValidator extends AbstractValidator
 {
     const RESULT_CODE = 'RESULT_CODE';
 
-    /** @var LoggerInterface */
+    /**
+     * @var LoggerInterface
+     */
     private $logger;
 
     /**
-     * @param LoggerInterface $logger
+     * @param LoggerInterface        $logger
      * @param ResultInterfaceFactory $resultFactory
      */
     public function __construct(ResultInterfaceFactory $resultFactory, LoggerInterface $logger)
@@ -64,7 +66,7 @@ class ResponseCodeValidator extends AbstractValidator
     }
 
     /**
-     * @param array $response
+     * @param  array $response
      * @return bool
      */
     private function isSuccessfulTransaction(array $response)

@@ -21,9 +21,9 @@ class Info extends \Magento\Payment\Block\Info
     protected $_payfastInfoFactory;
 
     /**
-     * @param Context $context
+     * @param Context     $context
      * @param InfoFactory $payfastInfoFactory
-     * @param array $data
+     * @param array       $data
      */
     public function __construct(
         Context $context,

@@ -170,7 +170,7 @@ class Cart extends \Magento\Payment\Model\Cart
      * - run shopping cart and estimate shipping
      * - go to PayPal
      *
-     * @param \Magento\Payment\Model\Cart\SalesModel\SalesModelInterface $salesEntity
+     * @param  \Magento\Payment\Model\Cart\SalesModel\SalesModelInterface $salesEntity
      * @return void
      */
     protected function _applyDiscountTaxCompensationWorkaround(

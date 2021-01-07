@@ -1,18 +1,20 @@
 <?php namespace Payfast\Payfast\Gateway\Response;
 
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
+use Magento\Payment\Gateway\Response\HandlerInterface;
 use Magento\Sales\Model\Order\Payment;
+use Psr\Log\LoggerInterface;
 
-class ItnHandler implements \Magento\Payment\Gateway\Response\HandlerInterface
+class ItnHandler implements HandlerInterface
 {
     const TXN_ID = 'TXN_ID';
 
     private $logger;
 
     /**
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param LoggerInterface $logger
      */
-    public function __construct(\Psr\Log\LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
@@ -28,8 +30,8 @@ class ItnHandler implements \Magento\Payment\Gateway\Response\HandlerInterface
     public function handle(array $handlingSubject, array $response)
     {
         if (!isset($handlingSubject['payment'])
-                     || !$handlingSubject['payment'] instanceof PaymentDataObjectInterface
-          ) {
+            || !$handlingSubject['payment'] instanceof PaymentDataObjectInterface
+        ) {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
 
@@ -37,7 +39,6 @@ class ItnHandler implements \Magento\Payment\Gateway\Response\HandlerInterface
 
         $payment = $paymentDO->getPayment();
 
-        /** @var $payment Payment */
         $payment->setTransactionId($response[self::TXN_ID]);
         $payment->setIsTransactionClosed(false);
     }

@@ -16,14 +16,6 @@ class ClientMock implements ClientInterface
     const FAILURE = 0;
 
     /**
-     * @var array
-     */
-    private $results = [
-        self::SUCCESS,
-        self::FAILURE
-    ];
-
-    /**
      * @var Logger
      */
     private $logger;
@@ -37,7 +29,7 @@ class ClientMock implements ClientInterface
         $this->logger = $logger;
     }
 
-    public function placeRequest(\Magento\Payment\Gateway\Http\TransferInterface $transferObject)
+    public function placeRequest(TransferInterface $transferObject)
     {
 
         // TODO: Implement placeRequest() method.
@@ -62,7 +54,7 @@ class ClientMock implements ClientInterface
      * Returns result code
      * will always return false for now since PayFast needs to do a redirect.
      *
-     * @param TransferInterface $transfer
+     * @param  TransferInterface $transfer
      * @return int
      */
     private function getResultCode(TransferInterface $transfer)
@@ -105,14 +97,14 @@ class ClientMock implements ClientInterface
     /**
      * Returns response fields for result code
      *
-     * @param int $resultCode
+     * @param  int $resultCode
      * @return array
      */
     private function getFieldsBasedOnResponseType($resultCode)
     {
         switch ($resultCode) {
-            case self::FAILURE:
-                return [
+        case self::FAILURE:
+            return [
                     'FRAUD_MSG_LIST' => [
                         'Stolen card',
                         'Customer location differs'
