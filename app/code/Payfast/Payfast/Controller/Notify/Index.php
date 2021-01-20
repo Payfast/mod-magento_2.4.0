@@ -144,14 +144,14 @@ class Index extends AbstractPayfast implements CsrfAwareActionInterface
         pflog(__METHOD__ . ' : bof');
 
         try {
-            $invoice = $this->_order->prepareInvoice();
-            $invoice->setBaseGrandTotal($this->_order->getBaseGrandTotal());
-            $invoice->register()->capture();
 
+            $invoice = $this->_order->prepareInvoice();
+
+            /** @var \Magento\Sales\Model\Order $order */
+            $order = $invoice->getOrder();
+            $order->setIsInProcess(true);
             $transaction = $this->transactionFactory->create();
-            $transaction
-                ->addObject($invoice->getOrder());
-            $transaction->save();
+            $transaction->addObject($order)->save();
 
             $this->orderResourceModel->save($this->_order);
 
