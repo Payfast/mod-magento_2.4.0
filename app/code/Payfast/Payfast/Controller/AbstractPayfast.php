@@ -9,13 +9,15 @@ namespace Payfast\Payfast\Controller;
 
 require_once dirname(__FILE__) . '/../Model/payfast_common.inc';
 
-use Magento\Framework\App\Action\Action;
+
 use Magento\Customer\Model\Session;
 use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\App\ActionFlag;
 use Magento\Framework\App\ActionInterface;
 use Magento\Framework\App\Response\RedirectInterface;
 use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\Result\Raw;
 use Magento\Framework\DB\TransactionFactory;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface as MessageManagerInterface;
@@ -38,8 +40,12 @@ use Psr\Log\LoggerInterface;
  * Abstract PayFast Checkout Controller
  */
 
-abstract class AbstractPayfast implements ActionInterface
+abstract class AbstractPayfast implements ActionInterface, HttpGetActionInterface
 {
+    /**
+     * @var Raw $rawResult
+     */
+    protected $rawResult;
     /**
      * Internal cache of checkout models
      *
@@ -197,7 +203,8 @@ abstract class AbstractPayfast implements ActionInterface
         Payfast $paymentMethod,
         OrderSender $orderSender,
         InvoiceSender $invoiceSender,
-        Transaction $salesTransactionResourceModel
+        Transaction $salesTransactionResourceModel,
+        Raw $rawResult
     ) {
         $pre = __METHOD__ . " : ";
 
@@ -218,7 +225,7 @@ abstract class AbstractPayfast implements ActionInterface
         $this->orderSender = $orderSender;
         $this->invoiceSender = $invoiceSender;
         $this->salesTransactionResourceModel = $salesTransactionResourceModel;
-
+        $this->rawResult = $rawResult;
         $parameters = ['params' => [$this->_configMethod]];
         $this->_objectManager = $context->getObjectManager();
         $this->_url = $context->getUrl();

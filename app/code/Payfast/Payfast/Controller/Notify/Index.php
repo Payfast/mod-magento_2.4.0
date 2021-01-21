@@ -7,10 +7,12 @@ namespace Payfast\Payfast\Controller\Notify;
  * Except as expressly indicated in this licence, you may not use, copy, modify or distribute this plugin / code or part thereof in any way.
  */
 
+
+use Magento\Framework\App\Action\HttpPostActionInterface;
 use Magento\Framework\App\CsrfAwareActionInterface;
 use Magento\Framework\App\Request\InvalidRequestException;
 use Magento\Framework\App\RequestInterface;
-use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Payment;
@@ -18,14 +20,15 @@ use Payfast\Payfast\Controller\AbstractPayfast;
 use Payfast\Payfast\Model\Config as PayFastConfig;
 use Payfast\Payfast\Model\Info;
 
-class Index extends AbstractPayfast implements CsrfAwareActionInterface
+class Index extends AbstractPayfast implements CsrfAwareActionInterface, HttpPostActionInterface
 {
+
     /**
      * indexAction
      *
      * Instantiate ITN model and pass ITN request to it
      */
-    public function execute()
+    public function execute(): ResultInterface
     {
         $pre = __METHOD__ . " : ";
         $this->_logger->debug($pre . 'bof');
@@ -130,7 +133,16 @@ class Index extends AbstractPayfast implements CsrfAwareActionInterface
         if ($pfError) {
             pflog('Error occurred: ' . $pfErrMsg);
             $this->_logger->critical($pre . "Error occured : " . $pfErrMsg);
+            return $this->rawResult
+                ->setHttpResponseCode(400)
+                ->setHeader('Content-Type', 'text/html')
+                ->setContents($pfErrMsg);
         }
+
+        return $this->rawResult
+            ->setHttpResponseCode(200)
+            ->setHeader('Content-Type', 'text/html')
+            ->setContents('HTTP/1.0 200');
     }
 
     /**
